@@ -1,0 +1,10 @@
+version: "3.5"
+services:
+    node-backend:
+        build: .
+        init: true
+        ports:
+            - 8080:8080
+        volumes:
+            - ./log:/app/log
+            - ./data:/app/data

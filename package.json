@@ -1,0 +1,23 @@
+{
+  "name": "node-backend",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yimura/Node-Backend.git"
+  },
+  "author": "yimura",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Yimura/Node-Backend/issues"
+  },
+  "homepage": "https://github.com/Yimura/Node-Backend#readme",
+  "dependencies": {
+    "@yimura/import-dir": "^0.1.12"
+  }
+}
