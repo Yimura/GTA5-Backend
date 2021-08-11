@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Yimura/Node-Backend#readme",
   "dependencies": {
-    "@yimura/import-dir": "^0.1.12"
+    "@yimura/import-dir": "^0.1.12",
+    "mongoose": "^5.13.7"
   }
 }
