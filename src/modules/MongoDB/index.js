@@ -27,7 +27,7 @@ export default class MongoDB extends EventModule {
     }
 
     init() {
-        const config = this.config.development ? this.auth?.credentials?.mongodb.dev : this.auth?.credentials?.mongodb.prod;
+        const config = this.config.development ? this.auth.credentials?.mongodb.dev : this.auth.credentials?.mongodb.prod;
         if (!config) {
             this.log.critical('MongoDB', 'There are no mongo credentials in the auth file present.');
 
