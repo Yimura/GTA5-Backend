@@ -1,3 +1,5 @@
+import Modules from '@/src/managers/Modules.js'
+
 export default class Route {
     /**
      * @param {Main} main The program entrypoint class
@@ -18,10 +20,6 @@ export default class Route {
         return this._m.log;
     }
 
-    get modules() {
-        return this._m.modules;
-    }
-
     get route() {
         throw new Error('The route of this endpoint has not been defined.');
     }
@@ -29,10 +27,10 @@ export default class Route {
     /**
      * Checks if a session is valid
      * @param {Request} request
-     * @param {string} [permLevel = "info"]
+     * @param {string} [permLevel = "normal"]
      * @returns {boolean}
      */
-    isSessionValid(request, permLevel = 'info') {
-        return this.modules.session.isSessionValid(request.headers['authorization'], permLevel);
+    isSessionValid(request, permLevel = 'normal') {
+        return Modules.Sessions.isSessionValid(request.headers['authorization'], permLevel);
     }
 }
