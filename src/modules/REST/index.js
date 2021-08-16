@@ -52,7 +52,10 @@ export default class REST extends BaseModule {
         }
 
         try {
-            await instance[method](request);
+            if (await instance[method](request))
+            {
+                this.log.info("REST", `Handled ${method.toUpperCase()} request ${request.req.url}`);
+            }
         } catch (err) {
             request.res.writeHead(500, { 'Content-Type': 'text/plain' });
             if (this.config.development)
