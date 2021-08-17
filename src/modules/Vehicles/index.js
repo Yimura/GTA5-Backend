@@ -25,6 +25,13 @@ export default class Vehicles extends BaseModule {
         return HandlingModel.getOne({ share_code });
     }
 
+    updateHandlingData(sessionId, data) {
+        const session = Modules.Sessions.get(sessionId);
+        if (!session) return undefined;
+
+
+    }
+
     async saveHandlingData(sessionId, data) {
         const session = Modules.Sessions.get(sessionId);
         if (!session) return undefined;

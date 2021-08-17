@@ -16,9 +16,14 @@ export const getOne = async (q) => {
     return HandlingSchema.findOne(q);
 };
 
+export const update = async(q, update) => {
+    return HandlingSchema.findOneAndUpdate(q, update);
+};
+
 export default {
     create,
     ensureUnique,
     getAll,
-    getOne
+    getOne,
+    update
 }
