@@ -17,7 +17,7 @@ export const getOne = async (q) => {
 };
 
 export const update = async(q, update) => {
-    return HandlingSchema.findOneAndUpdate(q, update);
+    return HandlingSchema.findOneAndUpdate(q, update, { new: true });
 };
 
 export default {
