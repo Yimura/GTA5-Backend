@@ -18,6 +18,16 @@ export default class Users extends BaseModule {
 
     /**
      *
+     * @param {Object} q The object to match the user with
+     * @param {string} id The string id of the handling profile
+     * @returns The new user object
+     */
+    appendHandlingProfile(q, id) {
+        return UserModel.appendHandlingProfile(q, id);
+    }
+
+    /**
+     *
      * @param {Object} user
      * @returns
      */

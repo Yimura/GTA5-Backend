@@ -46,4 +46,22 @@ export default class Vehicles extends BaseModule {
 
         return HandlingModel.create(handlingData);
     }
+
+    /**
+     *
+     * @param {string} sessionId The session id of the user
+     * @param {string} share_code Share code to find the id of the handling profile
+     * @returns {boolean} True if the handling id was added successfully, false otherwise
+     */
+    async saveProfile(sessionId, share_code) {
+        const session = Modules.Sessions.get(sessionId);
+        if (!session) return false;
+
+        const { _id, user_id } = await this.getHandlingDataByShareCode(share_code);
+        if (!_id || user_id == session.userId) return false;
+
+        const { saved_profiles } = await Modules.Users.appendHandlingProfile({ _id: session.userId }, _id);
+
+        return saved_profiles.includes(_id);
+    }
 }

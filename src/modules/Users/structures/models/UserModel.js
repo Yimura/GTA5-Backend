@@ -2,6 +2,16 @@ import UserSchema from '../schemas/UserSchema.js';
 
 /**
  *
+ * @param {*} q
+ * @param {*} profile_id
+ * @returns {UserSchema}
+ */
+export const appendHandlingProfile = (q, profile_id) => {
+    return UserSchema.findOneAndUpdate(q, { $addToSet: { saved_profiles: profile_id } }, { new: true }).exec();
+}
+
+/**
+ *
  * @param {Object} user
  * @returns {UserSchema}
  */
@@ -50,6 +60,7 @@ export const updateUser = (q, update) => {
 };
 
 export default {
+    appendHandlingProfile,
     createUser,
     deleteUser,
     getUser,
