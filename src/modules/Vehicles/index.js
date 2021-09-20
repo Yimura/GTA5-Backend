@@ -25,12 +25,13 @@ export default class Vehicles extends BaseModule {
         return HandlingModel.getOne({ share_code });
     }
 
-    updateHandlingData(sessionId, data) {
+    getSavedHandlingData(sessionId, handling_hash) {
         const session = Modules.Sessions.get(sessionId);
-        if (!session) return undefined;
+        if (!session) return [];
 
-        const { share_code } = data;
-        return HandlingModel.update({ share_code, user_id: session.userId }, data);
+        const ids = session.user.saved_profiles;
+
+        return HandlingModel.getAll({ _id: { $in: ids }, handling_hash });
     }
 
     async saveHandlingData(sessionId, data) {
@@ -63,5 +64,13 @@ export default class Vehicles extends BaseModule {
         const { saved_profiles } = await Modules.Users.appendHandlingProfile({ _id: session.userId }, _id);
 
         return saved_profiles.includes(_id);
+    }
+
+    updateHandlingData(sessionId, data) {
+        const session = Modules.Sessions.get(sessionId);
+        if (!session) return undefined;
+
+        const { share_code } = data;
+        return HandlingModel.update({ share_code, user_id: session.userId }, data);
     }
 }
