@@ -1,21 +1,75 @@
-# Node REST Template
+# GTA V Backend
 
-This is a node REST API template that I use for all my projects, it's scalable, modular and all that fancy handy dandy stuff.
+This backend is first of all not meant to be secure and can be easily abused to modify other user's their handling profiles. Keep this in mind and you'd be best to introduce some kind of password authentication on the endpoint that gives out session tokens.
 
-## Features
 
-- Modular
-- Scalable
-- ES Module syntax
-- Custom Loader for project relative imports
-- Clean and consistent code
-- Lightweigth ([1 dependency](https://www.npmjs.com/package/@yimura/import-dir))
-- Docker ready with example deployment files
+This backend is used in private on my [GTA V menu](https://github.com/Yimura/YimMenu) to share handling profiles with my friends.
 
-## To Do
+## How to deploy
 
-- Documentation
+### 1. Clone the code
+
+```bash
+git clone https://github.com/Yimura/GTA5-Backend.git
+cd GTA5-Backend
+```
+
+### 2. Fill in database details
+
+Open [`data/auth.js`](data/auth.js):
+```json
+{
+    "credentials": {
+        "mongodb": {
+            "dev": {
+                "auth": {
+                    "user": "db_user",
+                    "password": "password",
+                    "host": "example.com",
+                    "database": "yimmenu"
+                },
+                "options": {
+                    "useNewUrlParser": true,
+                    "useUnifiedTopology": true,
+                    "useFindAndModify": false,
+                    "useCreateIndex": true
+                }
+            },
+            "prod": {
+                "auth": {
+                    "user": "db_user",
+                    "password": "password",
+                    "host": "example.com",
+                    "database": "yimmenu"
+                },
+                "options": {
+                    "useNewUrlParser": true,
+                    "useUnifiedTopology": true,
+                    "useFindAndModify": false,
+                    "useCreateIndex": true
+                }
+            }
+        }
+    }
+}
+```
+
+### 3. Starting the backend
+
+#### Docker
+
+```bash
+docker-compose up --build
+```
+
+#### Without Docker
+
+Have NodeJS (v14+) installed
+```bash
+npm install
+node --experimental-loader=./util/loader.js .
+```
 
 ## Documentation
 
-Documentation can be found [here](docs/).
+None available currently, open an issue if you wish for me to add this.
