@@ -1,7 +1,8 @@
-import { resolve as resolvePath } from 'path'
+import { resolve as resolvePath, join as joinPath } from 'path'
 
 export async function resolve(specifier, context, defaultResolver) {
-    specifier = specifier.replace(/^@\//, resolvePath('.') + '/');
+    if (specifier.startsWith('@/'))
+        specifier = joinPath('file://', resolvePath('.'), specifier.replace(/^@\//, ''));
 
     return defaultResolver(specifier, context);
 }
