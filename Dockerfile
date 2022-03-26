@@ -1,7 +1,8 @@
-FROM node:alpine
+FROM node:current-alpine
+
+EXPOSE 8080
 
 WORKDIR /app
-EXPOSE 8080
 
 COPY package.json package-lock.json ./
 
@@ -9,4 +10,4 @@ RUN npm i --silent
 
 COPY . .
 
-ENTRYPOINT [ "node", "--experimental-loader=./util/loader.js", "."]
+ENTRYPOINT [ "node", "--experimental-loader=./util/loader.js", "." ]
