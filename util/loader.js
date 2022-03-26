@@ -1,8 +1,17 @@
-import { resolve as resolvePath, join as joinPath } from 'path'
+import { resolve as resolvePath } from 'path'
 
+/**
+ * 
+ * @param {string} specifier 
+ * @param {object} context 
+ * @param {object} defaultResolver 
+ * @returns 
+ */
 export async function resolve(specifier, context, defaultResolver) {
-    if (specifier.startsWith('@/'))
-        specifier = joinPath('file://', resolvePath('.'), specifier.replace(/^@\//, ''));
-
-    return defaultResolver(specifier, context);
+    return defaultResolver(
+        specifier.startsWith('@')
+            ? specifier.replace(/^@\//, resolvePath('.') + '/')
+            : specifier,
+        context
+    );
 }

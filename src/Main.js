@@ -1,34 +1,18 @@
-import Modules from './managers/Modules.js'
-import log from './util/Log.js'
-import { loadJson } from './util/Util.js'
+import Modules from 'waffle-manager';
+import { resolve as resolvePath } from 'path';
 
-export default class Main {
+export class Main {
     constructor() {
-        this._a = loadJson('/data/auth.json');
-        this._c = loadJson('/data/config.json');
+        ['beforeExit', 'SIGTERM', 'SIGINT'].map(signal => process.on(signal, this.cleanup.bind(this)));
     }
 
-    get auth() {
-        return this._a;
+    async cleanup() {
+        await Modules.cleanup();
+
+        process.exit();
     }
 
-    get config() {
-        return this._c;
-    }
-
-    get log() {
-        return log;
-    }
-
-    async start() {
-        await Modules.load(this);
-    }
-
-    stop() {
-        this.log.info('MAIN', 'Stopping server...');
-
-        Modules.cleanup();
-
-        process.exit(0);
+    async init() {
+        await Modules.load(null, resolvePath('./src/modules/'));
     }
 }

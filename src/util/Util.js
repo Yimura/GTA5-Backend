@@ -1,8 +1,8 @@
-import fs from 'fs';
+import { readFileSync } from 'fs'
 
 export const loadJson = (path) => {
     try {
-        return JSON.parse(fs.readFileSync(process.cwd() + path));
+        return JSON.parse(readFileSync(process.cwd() + path));
     }
     catch (err) {
         return null;
@@ -11,4 +11,4 @@ export const loadJson = (path) => {
 
 export default {
     loadJson
-}
+};
