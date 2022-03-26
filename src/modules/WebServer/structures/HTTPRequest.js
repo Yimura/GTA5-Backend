@@ -65,6 +65,26 @@ export class HTTPRequest {
         return this._url;
     }
 
+    body() {
+        return new Promise((res, rej) => {
+            if (this._b) return res(this._b);
+            this._b = '';
+
+            this.req.on('data', d => this._b += d);
+            this.req.on('end', _ => res(this._b));
+        });
+    }
+
+    async json() {
+        try {
+            return JSON.parse(
+                await this.body()
+            );
+        } catch (error) {
+            return null;
+        }
+    }
+
     /**
      * Retrieve request headers
      * @param {string} name Header name
@@ -104,6 +124,13 @@ export class HTTPRequest {
     accept(body, code = 200) {
         if (code < 200 || code > 299)
             throw new RangeError('The HTTP response code for HTTPRequest#success needs to be between 200 and 299.');
+
+        if (typeof body === 'object')
+        {
+            this.setHeader('Content-Type', 'application/json');
+
+            body = JSON.stringify(body);
+        }
 
         this.res.writeHead(code, this._headers);
         this.res.end(body);
