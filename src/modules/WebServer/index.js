@@ -78,7 +78,7 @@ export const ModuleInstance = class WebServer extends EventEmitter {
         const headers = this.applyDynamicHeaders(httpRequest);
 
         httpRequest.setHeaders(headers, false);
-        if (httpRequest !== 'OPTIONS')
+        if (httpRequest.method !== 'OPTIONS')
             return false;
 
         httpRequest.accept('', 204);
