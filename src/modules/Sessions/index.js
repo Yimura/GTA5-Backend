@@ -20,16 +20,17 @@ export const ModuleInstance = class Sessions {
     /**
      *
      * @param {string} userId
+     * @param {string} scToken
      * @returns {Session}
      */
-    create(userId) {
+    create(userId, scToken) {
         let sessionId;
 
         do {
             sessionId = randomBytes(32).toString('base64');
         } while (this._cache.has(sessionId));
 
-        const session = new Session(sessionId, userId);
+        const session = new Session(sessionId, userId, scToken);
         this._cache.set(sessionId, session);
 
         return session;
