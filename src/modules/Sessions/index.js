@@ -38,6 +38,15 @@ export const ModuleInstance = class Sessions {
     /**
      *
      * @param {string} sessionId
+     * @returns {boolean}
+     */
+    delete(sessionId) {
+        return this._cache.delete(sessionId);
+    }
+
+    /**
+     *
+     * @param {string} sessionId
      * @returns {Session}
      */
     get(sessionId) {
@@ -51,6 +60,8 @@ export const ModuleInstance = class Sessions {
     }
 
     removeOldSessions() {
+        Logger.info('SESSIONS', 'Removing old sessions...');
+
         for (const session of this._cache.values())
             if (session.isExpired())
                 this._cache.delete(session.sessionId);
