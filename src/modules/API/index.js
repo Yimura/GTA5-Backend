@@ -33,8 +33,8 @@ export const ModuleInstance = class RESTAPI {
     }
 
     /**
-     * 
-     * @param {object} routes 
+     *
+     * @param {object} routes
      */
     async prepareRoutes(routes, route = '/api') {
         for (const bit in routes) {
@@ -77,10 +77,10 @@ export const ModuleInstance = class RESTAPI {
             return request.reject(405);
 
         try {
-            return instance[method](request);
+            return await instance[method](request);
         } catch (err) {
             Logger.error('REST', `An error occured on "${path}":`, err.stack);
-            
+
             return request.reject(500);
         }
     }
