@@ -1,45 +1,80 @@
-import BaseModule from './structures/BaseModule.js'
-import Constants from './util/Constants.js'
-import UserModel from './structures/models/UserModel.js'
+import { ModuleBuilder } from 'waffle-manager';
+import { Logger } from '@/src/util/Logger.js';
+import UserSchema from './Schema.js';
 
-export default class Users extends BaseModule {
-    constructor(main) {
-        super(main);
+export const ModuleConstants = {
+    UserSchema
+};
 
-        this.register(Users, {
-            name: 'Users',
-            requires: [ 'mongodb' ]
-        });
+export const ModuleInfo = new ModuleBuilder('users')
+    .addRequired('mongodb')
+    .addRequired('vehicles');
+
+export const ModuleInstance = class Users {
+    constructor() {
+
     }
 
-    get constants() {
-        return Constants;
+    /**
+     * Create a new user
+     * @param {string} username Username of the user
+     * @param {string} rockstarId RockstarID of the user
+     * @returns {Promise<UserSchema>}
+     */
+    create(username, rockstarId) {
+        return new UserSchema({
+            accounts: [
+                { username, rockstarId }
+            ]
+        }).save();
+    }
+
+    /**
+     * Delete a user
+     * @param {object} query
+     * @returns {Promise<UserSchema>} The deleted object
+     */
+    delete(query) {
+        return UserSchema.findOneAndDelete(query).exec();
+    }
+
+    /**
+     * Search for a user
+     * @param {object} query
+     * @returns {Promise<UserSchema>}
+     */
+    get(query) {
+        return UserSchema.findOne(query).exec();
+    }
+
+    /**
+     * Get a UserSchema by RockstarID
+     * @param {string} rockstarId
+     */
+    getByRockstarID(rockstarId) {
+        return this.get({ "accounts.rockstarId": rockstarId });
     }
 
     /**
      *
-     * @param {Object} q The object to match the user with
-     * @param {string} id The string id of the handling profile
-     * @returns The new user object
+     * @param {string} userId
+     * @param {number} handlingHash
+     * @returns {Promise<Array<HandlingSchema>>}
      */
-    appendHandlingProfile(q, id) {
-        return UserModel.appendHandlingProfile(q, id);
+    getSavedHandlingProfiles(userId, handlingHash) {
+        return UserSchema.findOne({ _id: userId })
+            .populate('saved_handling_profiles', {
+                match: { handlingHash: { $ne: handlingHash } }
+            }).exec();
     }
 
     /**
-     *
-     * @param {Object} user
-     * @returns
+     * Update a user object with a search query
+     * @param {object} query
+     * @param {object} update
+     * @returns {Promise<UserSchema>}
      */
-    create(user) {
-        return UserModel.createUser(user);
-    }
-
-    /**
-     * Search for a user and return it object
-     * @param {Object} q
-     */
-    get(q) {
-        return UserModel.getUser(q);
+    update(query, update) {
+        return UserSchema.findOneAndUpdate(query, update, { new: true }).exec();
     }
 }

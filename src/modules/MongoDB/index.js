@@ -1,60 +1,44 @@
-import EventModule from './structures/EventModule.js'
-import mongoose from 'mongoose'
+import { ModuleBuilder } from 'waffle-manager';
+import mongoose from 'mongoose';
+import { Logger } from '@/src/util/Logger.js';
+import { loadJson } from '@/src/util/Util.js';
 
-export default class MongoDB extends EventModule {
-    _ready = false;
+export const ModuleInfo = new ModuleBuilder('mongodb');
 
-    /**
-     * @param {Main} main
-     */
-    constructor(main) {
-        super(main);
+export const ModuleInstance = class StaticServe {
+    constructor() {
 
-        this.register(MongoDB, {
-            name: 'mongodb'
-        });
     }
 
-    /**
-     * @returns {Mongoose:NativeConnection}
-     */
-    get connection() {
-        return mongoose.connection;
+    isConnected() {
+        return this._connected;
     }
 
-    get ready() {
-        return this._ready;
-    }
-
-    init() {
-        const config = this.config.development ? this.auth.credentials?.mongodb.dev : this.auth.credentials?.mongodb.prod;
-        if (!config) {
-            this.log.critical('MongoDB', 'There are no mongo credentials in the auth file present.');
+    async init() {
+        const { mongodb } = loadJson('/data/auth.json');
+        if (!mongodb)
+        {
+            Logger.critical('MONGODB', 'There are no mongodb credentials in auth.json.');
 
             return false;
         }
 
+        this._connected = false;
         try {
+            const { auth, options } = mongodb;
+
             mongoose.connect(
-                `mongodb://${config.auth.user}:${config.auth.password}@${config.auth.host}:${config.auth.port}/${config.auth.database}`,
-                config.options);
-        } catch(e) {
-            this.log.critical('MongoDB', `Could not establish connection to MongoDB: ${e}`);
+                `mongodb://${auth.user}:${auth.password}@${auth.host}:${auth.port}/${auth.database}`,
+                options
+            );
 
-            return false;
+            Logger.info('MONGODB', 'Successfully connected to MongoDB server.');
+
+            this._connected = true;
+        } catch (e) {
+            Logger.critical('MONGODB', "Failed to connect to MongoDB server, are the credentials in auth.json correct?", e);
         }
 
-        if (this.config.development) {
-            mongoose.set("debug", (collectionName, method, query, doc) => {
-                console.log(`${collectionName}.${method}`, JSON.stringify(query), doc);
-            });
-        }
-
-        this.log.info('MongoDB', 'Established connection to MongoDB successfully.');
-
-        this.emit('ready');
-        this._ready = true;
-
-        return true;
+        return this._connected;
     }
 }

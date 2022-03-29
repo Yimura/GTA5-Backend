@@ -1,27 +1,13 @@
 {
     "development": true,
 
-    "webserver": {
+    "web_server": {
         "port": 8080,
 
         "allow_headers": [
-            "Accept",
-            "Authorization",
-            "Access-Control-Allow-Headers",
-            "Origin",
-            "Content-Type",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
+            "Authorization"
         ],
-        "allow_methods": [
-            "DELETE",
-            "GET",
-            "HEAD",
-            "PATCH",
-            "POST",
-            "PUT"
-        ],
-        "origins": [
+        "allowed_origins": [
             "http://localhost:8080"
         ]
     }

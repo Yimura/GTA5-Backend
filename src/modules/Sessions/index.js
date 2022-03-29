@@ -1,43 +1,70 @@
-import BaseModule from './structures/BaseModule.js'
-import Session from './structures/Session.js'
-import crypto from 'crypto'
-import Modules from '@/src/managers/Modules.js'
+import { ModuleBuilder } from 'waffle-manager';
+import { Logger } from '@/src/util/Logger.js';
+import { Session } from './Session.js';
+import { randomBytes } from 'crypto';
 
-export default class Sessions extends BaseModule {
-    sessions = new Map();
+export const ModuleInfo = new ModuleBuilder('sessions');
 
-    constructor(main) {
-        super(main);
-
-        this.register(Sessions, {
-            name: 'Sessions',
-
-            requires: [ 'Users' ]
-        });
+export const ModuleInstance = class Sessions {
+    constructor() {
+        /**
+         * @type{Map<string,Session>}
+         */
+        this._cache = new Map();
     }
 
-    create(user) {
+    cleanup() {
+        clearInterval(this._int);
+    }
+
+    /**
+     *
+     * @param {string} userId
+     * @param {string} scToken
+     * @returns {Session}
+     */
+    create(userId, scToken) {
         let sessionId;
 
         do {
-            sessionId = crypto.randomBytes(16).toString('base64');
-        } while (this.sessions.has(sessionId));
+            sessionId = randomBytes(32).toString('base64');
+        } while (this._cache.has(sessionId));
 
-        const session = new Session(user, sessionId);
-        this.sessions.set(sessionId, session);
+        const session = new Session(sessionId, userId, scToken);
+        this._cache.set(sessionId, session);
 
-        return session.id;
+        return session;
     }
 
+    /**
+     *
+     * @param {string} sessionId
+     * @returns {boolean}
+     */
+    delete(sessionId) {
+        return this._cache.delete(sessionId);
+    }
+
+    /**
+     *
+     * @param {string} sessionId
+     * @returns {Session}
+     */
     get(sessionId) {
-        return this.sessions.get(sessionId);
+        return this._cache.get(sessionId);
     }
 
-    isSessionValid(sessionId, level) {
-        const PermissionLevels = Modules.Users.constants.PermissionLevels;
-        const session = this.sessions.get(sessionId);
-        if (!session) return false;
+    init() {
+        this._int = setInterval(this.removeOldSessions.bind(this), 60 * 60 * 1e3);
 
-        return PermissionLevels.indexOf(level) <= PermissionLevels.indexOf(session.permissionLevel);
+        return true;
+    }
+
+    removeOldSessions() {
+        Logger.info('SESSIONS', 'Removing old sessions...');
+
+        for (const session of this._cache.values())
+            if (session.isExpired())
+                this._cache.delete(session.sessionId);
     }
 }

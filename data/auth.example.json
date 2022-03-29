@@ -1,34 +1,17 @@
 {
-    "credentials": {
-        "mongodb": {
-            "dev": {
-                "auth": {
-                    "user": "",
-                    "password": "",
-                    "host": "",
-                    "database": ""
-                },
-                "options": {
-                    "useNewUrlParser": true,
-                    "useUnifiedTopology": true,
-                    "useFindAndModify": false,
-                    "useCreateIndex": true
-                }
-            },
-            "prod": {
-                "auth": {
-                    "user": "",
-                    "password": "",
-                    "host": "",
-                    "database": ""
-                },
-                "options": {
-                    "useNewUrlParser": true,
-                    "useUnifiedTopology": true,
-                    "useFindAndModify": false,
-                    "useCreateIndex": true
-                }
-            }
+    "mongodb": {
+        "auth": {
+            "user": "",
+            "password": "",
+            "host": "",
+            "port": 27017,
+            "database": ""
+        },
+        "options": {
+            "useNewUrlParser": true,
+            "useUnifiedTopology": true,
+            "useFindAndModify": false,
+            "useCreateIndex": true
         }
     }
 }

@@ -1,46 +1,131 @@
-import EventModule from './structures/EventModule.js'
-import WebServer from './structures/web/Server.js'
+import EventEmitter from 'events';
+import http, { Server } from 'http';
+import { ModuleBuilder } from 'waffle-manager';
+import { Logger } from '@/src/util/Logger.js';
+import { loadJson } from '@/src/util/Util.js';
+import { HTTPRequest } from './structures/HTTPRequest.js';
+import Constants, { DefaultAllowedHeaders, DefaultAllowedMethods, SortFunction, WebServerConfig } from './util/Constants.js';
 
-export default class Web extends EventModule {
-    _server = new WebServer(this.config.webserver);
+export const ModuleConstants = Constants;
 
-    /**
-     * @param {Main} main The program entrypoint class
-     */
-    constructor(main) {
-        super(main);
+export const ModuleInfo = new ModuleBuilder('webServer');
 
-        this.register(Web, {
-            name: 'web'
-        });
+export const ModuleInstance = class WebServer extends EventEmitter {
+    constructor() {
+        super();
+
+        this._config = {}
+        this._defaultHeaders = {};
+        this._handlers = [];
+        this._s = new Server();
     }
 
-    _onError(err) {
-        this.log.error('WEB', 'Webserver encountered an error:', err);
+    get host() {
+        return this._config.host;
     }
 
-    _onReady() {
-        this.log.info('WEB', 'Webserver is ready.');
-    }
-
-    /**
-     * Forward the request from the webserver so it can be handle externally
-     * @param {Request} request
-     */
-    _onRequest(request) {
-        this.emit('request', request);
+    get port() {
+        return this._config.port;
     }
 
     /**
-     * @returns {boolean} Return true if the init succeeded, false to exit the entire app
+     * Adds a request handler for the given path.
+     * @param {string} path The path to be handle by said path handler.
+     * @param {function} handler The callback to the function handling the request.
      */
-    init() {
-        this.log.info('WEB', 'Starting Webserver...');
+    addPathHandler(path, handler) {
+        if (!path instanceof String)
+            throw new Error('Path is not of type String.');
+        if (typeof handler !== 'function')
+            throw new Error('Handler is not a function.');
 
-        this._server.on('ready', this._onReady.bind(this));
-        this._server.on('request', this._onRequest.bind(this));
-        this._server.start();
+        this._handlers.push([path, handler]);
+        this._handlers.sort(SortFunction);
+
+        Logger.info('WEB_SERVER', `Registered new handler for path "${path}"`);
+    }
+
+    /**
+     *
+     * @param {HTTPRequest} httpRequest
+     * @returns
+     */
+    applyDynamicHeaders(httpRequest) {
+        const reqOrigin = httpRequest.getHeader('origin');
+        const origin = this._config.allowed_origins.find(origin => origin == reqOrigin);
+
+        return Object.assign({}, this._defaultHeaders, { 'Access-Control-Allow-Origin': origin ?? null });
+    }
+
+    buildHeaders() {
+        const allowedHeaders = this._config.allowed_headers.concat(DefaultAllowedHeaders);
+        return {
+            'Access-Control-Allow-Headers': allowedHeaders.join(','),
+            'Access-Control-Allow-Methods': DefaultAllowedMethods.join(',')
+        };
+    }
+
+    cleanup() {
+        this._s.close();
+    }
+
+    /**
+     *
+     * @param {HTTPRequest} httpRequest
+     * @returns {boolean} Returns true if the request was a preflight request, false otherwise
+     */
+    handlePreflight(httpRequest) {
+        const headers = this.applyDynamicHeaders(httpRequest);
+
+        httpRequest.setHeaders(headers, false);
+        if (httpRequest.method !== 'OPTIONS')
+            return false;
+
+        httpRequest.accept('', 204);
+        return true;
+    }
+
+    /**
+     * @returns {WebServerConfig}
+     */
+    loadConfig() {
+        const { web_server } = loadJson('/data/config.json');
+        return Object.assign({}, WebServerConfig, web_server);
+    }
+
+    async init() {
+        this._config = this.loadConfig();
+        this._defaultHeaders = this.buildHeaders();
+
+        this._s.on('listening', this.onListening.bind(this));
+        this._s.on('request', this.onRequest.bind(this));
+        this._s.listen(this.port, this.host);
 
         return true;
     }
-}
+
+    onListening() {
+        Logger.info("WEB_SERVER", `Server listening on: ${this.host}:${this.port}`);
+    }
+
+    /**
+     * "request" event handler
+     * @param {http.IncomingMessage} request
+     * @param {http.ServerResponse} response
+     */
+    async onRequest(request, response) {
+        const httpRequest = new HTTPRequest(request, response);
+        if (this.handlePreflight(httpRequest))
+            return;
+
+        for (const [ path, handler ] of this._handlers) {
+            if (httpRequest.path.startsWith(path)) {
+                await handler(httpRequest);
+
+                return;
+            }
+        }
+
+        response.end(`<pre>No handler registered for path: ${httpRequest.path}</pre>`);
+    }
+};

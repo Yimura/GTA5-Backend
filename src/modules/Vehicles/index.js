@@ -1,76 +1,80 @@
-import BaseModule from './structures/BaseModule.js'
-import Modules from '@/src/managers/Modules.js'
-import HandlingModel from './structures/models/HandlingModel.js'
-import { createShareCode } from './util/ShareCode.js'
+import { ModuleBuilder } from 'waffle-manager';
+import HandlingSchema from './HandlingSchema.js';
+import { createShareCode } from './Util.js';
 
-export default class Vehicles extends BaseModule {
-    constructor(main) {
-        super(main);
+export const ModuleConstants = {
+    HandlingSchema
+};
 
-        this.register(Vehicles, {
-            name: 'Vehicles',
+export const ModuleInfo = new ModuleBuilder('vehicles')
+    .addRequired('mongodb')
+    .addRequired('users');
 
-            requires: [ 'mongodb', 'Sessions' ]
-        });
+export const ModuleInstance = class Users {
+    constructor() {
+
     }
 
-    getHandlingDataBySession(sessionId, handling_hash) {
-        const session = Modules.Sessions.get(sessionId);
-        if (!session) return [];
-
-        return HandlingModel.getAll({ user_id: session.userId, handling_hash });
-    }
-
-    getHandlingDataByShareCode(share_code) {
-        return HandlingModel.getOne({ share_code });
-    }
-
-    getSavedHandlingData(sessionId, handling_hash) {
-        const session = Modules.Sessions.get(sessionId);
-        if (!session) return [];
-
-        const ids = session.user.saved_profiles;
-
-        return HandlingModel.getAll({ _id: { $in: ids }, handling_hash });
-    }
-
-    async saveHandlingData(sessionId, data) {
-        const session = Modules.Sessions.get(sessionId);
-        if (!session) return undefined;
-
-        let share_code;
+    async createHandlingProfile(userId, handlingProfile) {
+        let shareCode;
         do {
-            share_code = createShareCode(session);
-        } while (!await HandlingModel.ensureUnique(share_code));
+            shareCode = createShareCode();
+        } while (await this.shareCodeExists(shareCode));
 
-        const handlingData = Object.assign({ user_id: session.userId, share_code }, data);
+        const handlingData = Object.assign({ userId, shareCode }, handlingProfile);
 
-        return HandlingModel.create(handlingData);
+        try {
+            return new HandlingSchema(handlingData).save();
+        } catch (error) {
+            return null;
+        }
     }
 
     /**
      *
-     * @param {string} sessionId The session id of the user
-     * @param {string} share_code Share code to find the id of the handling profile
-     * @returns {boolean} True if the handling id was added successfully, false otherwise
+     * @param {string} userId
+     * @param {string} shareCode
+     * @returns {Promise<HandlingSchema>}
      */
-    async saveProfile(sessionId, share_code) {
-        const session = Modules.Sessions.get(sessionId);
-        if (!session) return false;
-
-        const { _id, user_id } = await this.getHandlingDataByShareCode(share_code);
-        if (!_id || user_id == session.userId) return false;
-
-        const { saved_profiles } = await Modules.Users.appendHandlingProfile({ _id: session.userId }, _id);
-
-        return saved_profiles.includes(_id);
+    deleteHandlingProfile(userId, shareCode) {
+        return HandlingSchema.findOneAndDelete({ userId, shareCode }).exec();
     }
 
-    updateHandlingData(sessionId, data) {
-        const session = Modules.Sessions.get(sessionId);
-        if (!session) return undefined;
+    /**
+     *
+     * @param {object} query
+     * @returns {Promise<HandlingSchema>}
+     */
+    getHandlingProfile(query) {
+        return HandlingSchema.findOne(query).exec();
+    }
 
-        const { share_code } = data;
-        return HandlingModel.update({ share_code, user_id: session.userId }, data);
+    /**
+     *
+     * @param {object} query
+     * @returns {Promise<Array<HandlingSchema>>}
+     */
+    getHandlingProfiles(query) {
+        return HandlingSchema.find(query).exec();
+    }
+
+    /**
+     * Returns the updated HandlingSchema
+     * @param {object} query
+     * @param {object} update
+     * @returns {Promise<HandlingSchema>}
+     */
+    updateHandlingProfile(query, update) {
+        return HandlingSchema.findOneAndUpdate(query, update, { new: true }).exec();
+    }
+
+    /**
+     * Returns a number above 0 if the share code exists.
+     * @param {string} shareCode
+     * @returns {number}
+     * @returns {Promise<number>}
+     */
+    shareCodeExists(shareCode) {
+        return HandlingSchema.countDocuments({ shareCode });
     }
 }
