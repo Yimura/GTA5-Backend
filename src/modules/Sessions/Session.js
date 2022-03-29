@@ -1,6 +1,7 @@
 export class Session {
-    constructor(sessionId, userId) {
+    constructor(sessionId, userId, scToken) {
         this._id = sessionId;
+        this._token = scToken;
         this._uid = userId;
 
         this._creationDate = Date.now();
@@ -8,6 +9,10 @@ export class Session {
 
     get sessionId() {
         return this._id;
+    }
+
+    get token() {
+        return this._token;
     }
 
     get userId() {
