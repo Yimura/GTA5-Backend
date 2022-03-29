@@ -5,7 +5,8 @@ import mime from 'mime/lite.js'
 import Modules, { ModuleBuilder } from 'waffle-manager';
 
 export const ModuleInfo = new ModuleBuilder('staticServer')
-    .addRequired('webServer');
+    .addRequired('webServer')
+    .setDisabled();
 
 export const ModuleInstance = class StaticServe {
     constructor() {
