@@ -26,11 +26,10 @@ export default class UpdateHandlingProfile extends Modules.REST.Route {
                 data: await Modules.Vehicles.updateHandlingData(authorization, body)
             });
         }
-        catch(e) {
+        catch {
             return request.reject(401, {
                 status: 'error',
-                message: 'Failed to create vehicle data.',
-                data: e
+                message: 'Failed to create vehicle data.'
             });
         }
     }
