@@ -16,10 +16,11 @@ export default class CreateSession extends Modules.REST.Route {
      */
     async post(request) {
         const body = await request.json();
-        if (!body || !body.rockstar_id) return request.reject(400, {
+        if (!body || !body.rockstar_id || !body.username) return request.reject(400, {
             status: 'fail',
             data: {
-                rockstar_id: 'This field is required.'
+                ...(!body.username && { username: 'This field is required.' }),
+                ...(!body.rockstar_id && { rockstar_id: 'This field is required.' })
             }
         });
 
