@@ -26,11 +26,10 @@ export default class SaveProfile extends Modules.REST.Route {
                 data: await Modules.Vehicles.saveProfile(authorization, share_code)
             });
         }
-        catch(e) {
+        catch {
             return request.reject(401, {
                 status: 'error',
-                message: 'Failed to add handling to user object.',
-                data: e
+                message: 'Failed to add handling to user object.'
             });
         }
     }
