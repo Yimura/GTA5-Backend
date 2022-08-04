@@ -21,10 +21,9 @@ export default class log {
 
         if (!level_types.includes(level)) throw new TypeError('Invalid logging level used!');
 
+        let log = show_time ? `[${new Date().toLocaleTimeString()}] ` : '', colors = ['', ''];
+
         if (level_types.indexOf(this._logLevel) <= level_types.indexOf(level)) {
-
-            let log = show_time ? `[${new Date().toLocaleTimeString()}] ` : '', colors = ['', ''];
-
             switch (level) {
                 case 'VERBOSE':
                     colors = ['\x1b[34m', '\x1b[0m'];
