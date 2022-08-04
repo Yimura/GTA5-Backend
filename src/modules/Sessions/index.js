@@ -16,13 +16,14 @@ export default class Sessions extends BaseModule {
         });
     }
 
-    create(user) {
+    create(user, fake = false) {
         let sessionId;
 
         do {
             sessionId = crypto.randomBytes(16).toString('base64');
         } while (this.sessions.has(sessionId));
 
+        if (fake) return sessionId;
         const session = new Session(user, sessionId);
         this.sessions.set(sessionId, session);
 

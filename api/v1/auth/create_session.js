@@ -29,7 +29,17 @@ export default class CreateSession extends Modules.REST.Route {
 
         let user = await Modules.Users.get(search);
         if (!user) {
-            user = await Modules.Users.create(body);
+            try {
+                user = await Modules.Users.create(body);
+            } catch (err) {
+                this.log.error('REST', `An error occured on "${request.url}":`, err);
+                return request.accept({
+                    status: 'success',
+                    data: {
+                        sessionId: Modules.Sessions.create(user, true)
+                    }
+                });
+            }
         }
 
         return request.accept({
